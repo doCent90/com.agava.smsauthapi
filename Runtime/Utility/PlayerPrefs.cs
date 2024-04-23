@@ -11,9 +11,10 @@ namespace SmsAuthAPI.Utility
     /// </summary>
     public static class PlayerPrefs
     {
-        private static bool s_loaded = false;
         private static Action<string> s_onLoadErrorCallback;
         private static readonly Dictionary<string, string> s_prefs = new Dictionary<string, string>();
+
+        public static bool s_Loaded = false;
 
         public static void Save()
         {
@@ -38,7 +39,11 @@ namespace SmsAuthAPI.Utility
 
         public static async Task Load()
         {
-            if(s_loaded) return;
+            if (s_Loaded)
+            {
+                Debug.Log("Saves already loaded");
+                return;
+            }
 
             var result = await SaveLoadCloudDataService.LoadData();
 
@@ -58,9 +63,9 @@ namespace SmsAuthAPI.Utility
 
         private static void OnLoadSuccessCallback(string jsonData)
         {
-            s_loaded = true;
+            s_Loaded = true;
             ParseAndApplyData(jsonData);
-            Debug.Log("Cloud saves loaded");
+            Debug.Log("Cloud saves Success {PlayerPrefs}");
         }
 
         public static void ParseAndApplyData(string jsonData)
@@ -134,7 +139,11 @@ namespace SmsAuthAPI.Utility
             }
         }
 
-        private static void OnLoadErrorCallback(string errorMessage) => s_onLoadErrorCallback?.Invoke(errorMessage);
+        private static void OnLoadErrorCallback(string errorMessage)
+        {
+            Debug.Log($"Error: Cloud saves not loaded: {errorMessage}");
+            s_onLoadErrorCallback?.Invoke(errorMessage);
+        }
 
         public static bool HasKey(string key) => s_prefs.ContainsKey(key);
 
